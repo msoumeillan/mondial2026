@@ -89,9 +89,11 @@
   /* Controls */
   .controls{
     position:sticky;top:0;z-index:30;
-    background:linear-gradient(180deg,var(--bg) 60%,transparent);
-    padding:18px 0 14px;margin-top:18px;
+    background:linear-gradient(180deg,var(--bg) 70%,transparent);
+    padding:14px 0 12px;margin-top:18px;
+    transition:transform .28s ease;
   }
+  .controls.hidden{transform:translateY(-115%)}
   .search{
     width:100%;display:flex;align-items:center;gap:10px;
     background:var(--card);border:1px solid var(--border);
@@ -886,6 +888,23 @@ if(installBtn) installBtn.onclick=async()=>{
   deferredPrompt=null; installBtn.hidden=true;
 };
 window.addEventListener("appinstalled",()=>{ if(installBtn) installBtn.hidden=true; });
+
+/* Masquer la barre de recherche/filtres quand on scrolle vers le bas,
+   la réafficher quand on remonte (libère l'écran sur mobile) */
+(function(){
+  const ctrl=document.querySelector(".controls");
+  if(!ctrl) return;
+  let lastY=window.scrollY, ticking=false;
+  function update(){
+    const y=window.scrollY;
+    if(y>lastY+6 && y>200) ctrl.classList.add("hidden");      // descente → on masque
+    else if(y<lastY-6 || y<=200) ctrl.classList.remove("hidden"); // remontée / haut → on montre
+    lastY=y; ticking=false;
+  }
+  window.addEventListener("scroll",()=>{
+    if(!ticking){ requestAnimationFrame(update); ticking=true; }
+  },{passive:true});
+})();
 </script>
 </body>
 </html>
