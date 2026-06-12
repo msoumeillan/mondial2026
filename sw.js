@@ -1,5 +1,5 @@
 /* Service worker — Coupe du Monde 2026 (PWA hors-ligne) */
-const CACHE = "wc2026-v2";
+const CACHE = "wc2026-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -49,19 +49,19 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Coquille de l'app (même origine) : cache-first, repli réseau, puis index
+  // Coquille de l'app (même origine) : RÉSEAU d'abord (toujours la dernière
+  // version en ligne), repli sur le cache si hors-ligne.
   if (url.origin === location.origin) {
     e.respondWith(
-      caches.match(req).then((hit) =>
-        hit ||
-        fetch(req)
-          .then((res) => {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy));
-            return res;
-          })
-          .catch(() => caches.match("./index.html"))
-      )
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+          return res;
+        })
+        .catch(() =>
+          caches.match(req).then((hit) => hit || caches.match("./index.html"))
+        )
     );
   }
 });

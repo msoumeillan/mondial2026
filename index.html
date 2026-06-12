@@ -874,7 +874,14 @@ setInterval(loadScores,60000);
    PWA — service worker + invite d'installation Android
    ============================================================ */
 if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+  let refreshing=false;
+  window.addEventListener("load",()=>{
+    const hadController=!!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{
+      if(refreshing||!hadController) return; refreshing=true; location.reload();
+    });
+  });
 }
 let deferredPrompt=null;
 const installBtn=document.getElementById("install-btn");
